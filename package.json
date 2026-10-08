@@ -7,7 +7,7 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "tsc -b",
-    "test": "tsx --test src/scoring.test.ts src/schema.test.ts",
+    "test": "tsx --test src/scoring.test.ts src/schema.test.ts src/supabase-errors.test.ts",
     "preview": "vite preview"
   },
   "dependencies": {

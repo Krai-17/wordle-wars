@@ -84,6 +84,7 @@ const today = () => new Date().toLocaleDateString("en-CA");
 const cloudUrl = import.meta.env.VITE_SUPABASE_URL as string | undefined;
 const cloudKey = import.meta.env.VITE_SUPABASE_ANON_KEY as string | undefined;
 const configured = Boolean(cloudUrl && cloudKey);
+import { requestHeaders, roomRequestError } from "./supabase-errors";
 async function rpc(
   name: string,
   args: Record<string, unknown>,
@@ -92,17 +93,13 @@ async function rpc(
     throw new Error("Shared storage is not configured.");
   const response = await fetch(`${cloudUrl}/rest/v1/rpc/${name}`, {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      apikey: cloudKey,
-      Authorization: `Bearer ${cloudKey}`,
-    },
+    headers: requestHeaders(cloudKey.trim()),
     body: JSON.stringify(args),
   });
-  if (!response.ok)
-    throw new Error(
-      "Room request failed. Check your invite link and connection.",
-    );
+  if (!response.ok) {
+    const body: unknown = await response.json().catch(() => null);
+    throw new Error(roomRequestError(response.status, body));
+  }
   return response.status === 204 ? null : response.json();
 }
 async function loadRoom(token: string): Promise<Match[]> {
